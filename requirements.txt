@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 pandas
 altair
@@ -6,3 +7,13 @@ streamlit
 matplotlib
 statsmodels
 openpyxl
+=======
+
+pandas
+altair
+yfinance
+streamlit
+matplotlib
+statsmodels
+openpyxl
+>>>>>>> d8ec3788ee5df5ccc4174d696ce3ac62ee2123fd
