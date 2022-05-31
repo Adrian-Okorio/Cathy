@@ -1,0 +1,8 @@
+
+pandas
+altair
+yfinance
+streamlit
+matplotlib
+statsmodels
+openpyxl
