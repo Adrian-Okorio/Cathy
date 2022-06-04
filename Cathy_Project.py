@@ -1,11 +1,8 @@
-
-
-
 import pandas as pd
 import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
-#import plotly.express as px
+# import plotly.express as px
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
@@ -26,6 +23,7 @@ def check_hashes(password, hashed_text):
         return hashed_text
     return False
 
+
 # DB Management
 import sqlite3
 
@@ -45,8 +43,19 @@ def view_all_computers():
     return data
 
 
-def add_computerdata(computer_number, Availability, booked):
+def view_available_computers():
+    c.execute('SELECT * FROM computerstable where Status = "Availiable"')
+    data = c.fetchall()
+    return data
+
+
+#def add_computerdata(computer_number, Availability, booked):
     # c.execute('INSERT INTO computerstable(Computer_Number TEXT,Availability TEXT,Booked BOOLEAN) VALUES (?,?)'),(Computer_Number, Availability, Booked))
+ #   conn.commit()
+
+def add_data(task, task_status, task_due_date):
+    c.execute('INSERT INTO taskstable(task,task_status,task_due_date) VALUES (?,?,?)',
+              (task, task_status, task_due_date))
     conn.commit()
 
 
@@ -71,6 +80,18 @@ def edit_computer_data(new_computer, new_Brand, new_Status, ComputerNo, Brand, S
     return data
 
 
+def book_computer(Status, Status1):
+    c.execute("update computerstable set Status= ? where Status = ? ", (Status, Status1))
+    conn.commit()
+    data = c.fetchall()
+    return data
+
+
+def delete_computer(computer):
+    c.execute('DELETE FROM computerstable WHERE computerNo="{}"'.format(computer))
+    conn.commit()
+
+
 # Students database management
 def create_usertable():
     c.execute(
@@ -93,6 +114,11 @@ def view_all_users():
     c.execute('SELECT * FROM userstable')
     data = c.fetchall()
     return data
+
+
+def delete_student(users):
+    c.execute('DELETE FROM userstable WHERE StudentNo="{}"'.format(users))
+    conn.commit()
 
 
 def main():
@@ -123,9 +149,12 @@ def main():
 
 
     elif choice == "Admin Login":
+        st.sidebar.warning("To test functionality of the Administration account the "
+                           "User Name has been set to 'Admin', and password to 'admin'")
+
         st.subheader("Login Section")
-        username = st.sidebar.text_input("User Name")
-        password = st.sidebar.text_input("Password", type='password')
+        username = st.sidebar.text_input("User Name -> Admin ")
+        password = st.sidebar.text_input("Password -> admin ", type='password')
         if st.sidebar.checkbox("Login"):
             if (password == 'admin') & (username == 'Admin'):
                 st.success("You have successfully Logged in as Administrator")
@@ -140,12 +169,14 @@ def main():
                 # add_computerdata(Computer_Number,Availability,Booked)
 
                 # state availability of a computer or not ( under maintainable)
-                c.execute('SELECT * FROM userstable')
-                data = c.fetchall()
-                data1 = pd.DataFrame(data, columns=["StudentNo", "FirstName", "LastName", "Email", "Phone", "Password"])
-                data2 = st.dataframe(data1)
-                with st.expander("View all Registered students"):
+                with st.expander("View all student records"):
+                    c.execute('SELECT * FROM userstable')
+                    data = c.fetchall()
+                    data1 = pd.DataFrame(data
+                                         , columns=["StudentNo", "FirstName", "LastName", "Email", "Phone", "Password"])
+                    data2 = st.dataframe(data1)
                     print(data2)
+                    # with st.expander("View all Registered students"):
 
                 with st.expander("View all Computer"):
                     st.write('Available computer')
@@ -157,8 +188,8 @@ def main():
 
                 with st.expander("Update computer Status"):
                     st.write('Current Data')
-                    computer_status = st.selectbox("Status",
-                                                   ["Available", "In use", "Under maintainace", "Not Avaliable "])
+                    # computer_status = st.selectbox("Status",
+                    #                               ["Available", "In use", "Under maintainace", "Not Avaliable "])
                     c.execute('SELECT * FROM computerstable')
                     data3 = c.fetchall()
                     data4 = pd.DataFrame(data3, columns=['Computer_Number', 'Brand', 'Status'])
@@ -170,7 +201,7 @@ def main():
                     list_of_computers = [i[0] for i in view_all_computer_numbers()]
                     selected_computer = st.selectbox("Please select the computer to update", list_of_computers)
                     computer_result = get_computer(selected_computer)
-                    #st.write(computer_result)
+                    # st.write(computer_result)
 
                     if computer_result:
                         Computer_Number = computer_result[0][0]
@@ -201,8 +232,40 @@ def main():
                 with st.expander("Delete Student record"):
                     st.write('update computers')
 
+                    print(view_all_users())
+                    list_of_users = [i[0] for i in view_all_users()]
+                    selected_user = st.selectbox("Please select the computer to Delete", list_of_users)
+                    # computer_result = get_computer(selected_user)
+                    # st.write(computer_result)
+                    st.warning("Do you want to delete user {} ? ".format(selected_user))
+                    if st.button("Delete Student"):
+                        delete_student(selected_user)
+                        # edit_computer_data(new_computer, new_Brand, new_Status, Computer_Number, Brand, Status)
+                        st.success("{} Student record has been Deleted ".format(selected_user))
+
                 with st.expander("Delete Computer record"):
-                    st.write('update computers')
+                    st.write('Current Data')
+                    c.execute('SELECT * FROM computerstable')
+                    data31 = c.fetchall()
+                    data41 = pd.DataFrame(data31, columns=['Computer_Number', 'Brand', 'Status'])
+                    data51 = st.dataframe(data41)
+                    print(data51)
+
+                    print(view_all_computer_numbers())
+                    list_of_computers = [i[0] for i in view_all_computer_numbers()]
+                    selected_computer = st.selectbox("Please select the computer to Delete", list_of_computers)
+                    # computer_result = get_computer(selected_computer)
+                    # st.write(computer_result)
+                    st.warning("Do you want to delete computer {} ? ".format(selected_computer))
+                    if st.button("Delete Computer"):
+                        delete_computer(selected_computer)
+                        # edit_computer_data(new_computer, new_Brand, new_Status, Computer_Number, Brand, Status)
+                        st.success("{} Computer has been Deleted ".format(selected_computer))
+
+                    st.write('Updated Data')
+                    computer_result1 = view_all_computers()
+                    clean_db1 = pd.DataFrame(computer_result1, columns=["Computer_Number", "Type", "Availability"])
+                    st.dataframe(clean_db1)
 
                 with st.expander("Summary statistics"):
                     st.write('Summary of the comp lab')
@@ -210,13 +273,18 @@ def main():
                     sammary = sammary.reset_index()
                     st.dataframe(sammary)
 
-                 #   p1 = px.pie(sammary, names='index', values='Brand')
-                  #  st.plotly_chart(p1, use_container_width=True)
+                #   p1 = px.pie(sammary, names='index', values='Brand')
+                #  st.plotly_chart(p1, use_container_width=True)
 
+                with st.expander("Add New Computer"):
+                    st.write("Add New Computer")
 
 
             else:
                 st.warning("Incorrect Username/Password")
+
+            st.write("log out")
+
 
 
     elif choice == "Students Login":
@@ -231,11 +299,105 @@ def main():
             result = login_user(username, check_hashes(password, hashed_pswd))
             if result:
 
-                st.success("Logged In as {}".format(username))
+                with st.expander("View avaliable computers"):
+                    st.success("Logged In as {}".format(username))
+                    c.execute("SELECT * FROM computerstable WHERE Status ='Availiable' ")
+                    datav = c.fetchall()
+                    datab = pd.DataFrame(datav, columns=['Computer_Number', 'Brand', 'Status'])
+                    datan = st.dataframe(datab)
+                    print(datan)
+
+                # with st.expander("View Available  Computers"):
+                #  c.execute('SELECT * FROM computerstable')
 
                 task = st.selectbox("Task", ["Book computer", "Cancel booked Computer", ])
-                if task == "Add Post":
+                if task == "Book computer":
                     st.subheader("Book computer")
+
+                    print(view_available_computers())
+                    list_of_computers = [i[0] for i in view_available_computers()]
+                    selected_computer = st.selectbox("Please select the computer to Book", list_of_computers)
+                    computer_result = get_computer(selected_computer)
+                    # st.write(computer_result)
+
+                    if computer_result:
+                        Computer_Number = computer_result[0][0]
+                        Brand = computer_result[0][1]
+                        Status = computer_result[0][2]
+
+                        col1, col2 = st.columns(2)
+
+                        with col1:
+                            new_computer = st.write("Computer_Number", Computer_Number)
+                            new_Brand = st.write("Brand", Brand)
+                            new_Status = st.selectbox(Status, ["Available", "Booked"])
+                            # new_Status = st.text_input("Status", Status)
+
+                       # with col2:
+
+
+                        if st.button("Book Computer"):
+                            edit_computer_data(Computer_Number, Brand, new_Status, Computer_Number, Brand, Status)
+                            st.success("You Successfully booked Computer {}  ".format(Computer_Number))
+
+                            st.write("Updated Computer Data")
+                            c.execute('SELECT * FROM computerstable')
+                            data3 = c.fetchall()
+                            data4 = pd.DataFrame(data3, columns=['Computer_Number', 'Brand', 'Status'])
+                            data5 = st.dataframe(data4)
+                            print(data5)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    #if computer_result:
+                    #    Computer_Number = computer_result[0][0]
+                    #    Brand = computer_result[0][1]
+                    #    Status = computer_result[0][2]
+
+                    #    col1, col2 = st.columns(2)
+
+                    #    #with col1:
+                    #        #new_computer = st.text_area("Computer_Number", Computer_Number)
+
+                    #    with col1:
+                    #        #new_Brand = st.text_input("Brand", Brand)
+                    #        Status1 = st.selectbox(Status, ["Available", "Book"])
+#
+
+                    #    if st.button("Confirm Computer book"):
+                   #          book_computer(Status1, Status)
+                   #          # edit_computer_data(new_computer, new_Brand, new_Status, Computer_Number, Brand, Status)
+                    #         st.success("{} Computer has been Updated ")
+
+
+                #  st.write("Updated Computer Data")
+                #  c.execute('SELECT * FROM computerstable')
+                #  data3 = c.fetchall()
+                #  data4 = pd.DataFrame(data3, columns=['Computer_Number', 'Brand', 'Status'])
+                #  data5 = st.dataframe(data4)
+                #  print(data5)
 
                 elif task == "Analytics":
                     st.subheader("Cancel booked Computer")
