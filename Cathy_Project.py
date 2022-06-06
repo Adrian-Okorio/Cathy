@@ -123,16 +123,43 @@ def main():
                                   " Management Sytem", menu, disabled=False)
 
     if choice == "Home":
-        st.subheader("Home")
+        st.write("""# Home""")
 
-        st.write("""Welcome to the Makerere University Online Management System""")
-        st.write("""**""")
-        st.write("""Please note that A valid university id is required upon entrance""")
-        computer_result = view_all_computers()
-        clean_db = pd.DataFrame(computer_result, columns=["Computer_Number", "Type", "Availability"])
-        st.dataframe(clean_db)
+        st.write("""### Welcome to the Makerere University Online Management System""")
+        st.write("""The Makerere University Online Management System is a web based system that is used to 
+         manage, monitor and control computer usage within the laboratory""")
+        st.write("""#### Please note that A valid university id is required upon entrance""")
+        st.write("Below is a list of all the computers and there current status, Students can only Book a computer "
+                 "that is with satus 'Available'")
+        col4, col5 =st.columns(2)
+        with col4:
+            computer_result = view_all_computers()
+            clean_db = pd.DataFrame(computer_result, columns=["Computer_Number", "Type", "Availability"])
+            st.dataframe(clean_db)
+            st.write("'Out of Service' stands for all computes that are currently under repair, malfunctioned "
+                     "or going though updates")
 
-        st.write("""Note: all students should log in to be able book a computer if available""")
+        with col5:
+            st.write('Summary of the computer laboratory Activities')
+            c.execute('SELECT * FROM computerstable')
+            data3 = c.fetchall()
+            data4 = pd.DataFrame(data3, columns=['Computer_Number', 'Brand', 'Status'])
+            sammary = data4['Status'].value_counts().to_frame()
+            sammary = sammary.reset_index()
+            st.dataframe(sammary)
+
+
+            st.write("'Available' stands for all computes that are currently free")
+            st.write("'In Use' stands for all computes that are currently occupied by a Student")
+            st.write("'Booked' stands for all computes that have been secured though the online sytem however "
+                     "if a  student takes more than three hours to arrive to the the computer laboratory, "
+                     "the computer will be marked available for anyone to use")
+
+
+
+        st.write("""##### Note: all students should login to be able book a computer if available""")
+
+
 
 
 
@@ -154,7 +181,7 @@ def main():
                                          , columns=["StudentNo", "FirstName", "LastName", "Email", "Phone", "Password"])
                     data2 = st.dataframe(data1)
                     print(data2)
-                    # with st.expander("View all Registered students"):
+
 
                 with st.expander("View all Computer"):
                     st.write('Available computer')
@@ -166,8 +193,6 @@ def main():
 
                 with st.expander("Update computer Status"):
                     st.write('Current Data')
-                    # computer_status = st.selectbox("Status",
-                    #                               ["Available", "In use", "Under maintainace", "Not Avaliable "])
                     c.execute('SELECT * FROM computerstable')
                     data3 = c.fetchall()
                     data4 = pd.DataFrame(data3, columns=['Computer_Number', 'Brand', 'Status'])
@@ -273,7 +298,7 @@ def main():
             else:
                 st.warning("Incorrect Username/Password")
 
-            st.write("log out")
+            st.write("Click Home to automatically log out")
 
 
 
@@ -334,6 +359,8 @@ def main():
 
             else:
                 st.warning("Incorrect Username/Password")
+
+
 
 
 
